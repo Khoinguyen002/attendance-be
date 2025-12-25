@@ -3,6 +3,7 @@ from bson import ObjectId
 
 from app.extensions.mongo import mongo
 from app.modules.attendance.utils import today_str
+from app.modules.attendance.rules import evaluate_attendance
 
 
 def scan_attendance(employee_id: str):
@@ -15,6 +16,7 @@ def scan_attendance(employee_id: str):
         "date": today
     })
 
+    # ===== CHECK-IN =====
     if not daily:
         mongo.db.attendance_logs.insert_one({
             "employee_id": employee_oid,
@@ -36,7 +38,7 @@ def scan_attendance(employee_id: str):
     if daily.get("check_out"):
         raise ValueError("Already checked out today")
 
-    # ⏱ CHECK-OUT
+    # ===== CHECK-OUT =====
     worked_minutes = int(
         (now - daily["check_in"]).total_seconds() / 60
     )
@@ -55,6 +57,19 @@ def scan_attendance(employee_id: str):
                 "worked_minutes": worked_minutes
             }
         }
+    )
+
+    # ===== APPLY RULE =====
+    # reload record sau khi update
+    updated_daily = mongo.db.attendance_daily.find_one(
+        {"_id": daily["_id"]}
+    )
+
+    rule_result = evaluate_attendance(updated_daily)
+
+    mongo.db.attendance_daily.update_one(
+        {"_id": daily["_id"]},
+        {"$set": rule_result}
     )
 
     return "check_out"

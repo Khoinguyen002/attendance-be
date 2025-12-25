@@ -14,3 +14,7 @@ class Config:
 
     QR_TOKEN_TTL = int(os.getenv("QR_TOKEN_TTL", "0"))
     QR_SCAN_COOLDOWN = int(os.getenv("QR_SCAN_COOLDOWN", "60"))
+
+    TIMEZONE = os.getenv("TIMEZONE", "Asia/Ho_Chi_Minh")
+    WORK_START = os.getenv("WORK_START", "08:30")
+    WORK_END = os.getenv("WORK_END", "17:30")
