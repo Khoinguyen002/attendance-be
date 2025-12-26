@@ -9,9 +9,11 @@ from app.extensions.mongo import mongo
 def create_employee(data: dict):
     if mongo.db.employees.find_one({"email": data["email"]}):
         raise ValueError("Email already exists")
+    
+    password = data.get("password") or secrets.token_urlsafe(8)
 
     hashed = bcrypt.hashpw(
-        data["password"].encode(),
+        password.encode(),
         bcrypt.gensalt()
     ).decode()
 
