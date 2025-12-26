@@ -8,7 +8,8 @@ from app.modules.attendance.service import scan_attendance
 
 attendance_bp = Blueprint("attendance", __name__)
 
-@attendance_bp.get("/scan")
+@attendance_bp.post("/scan")
+@role_required("manager")
 def scan():
     token = request.args.get("token")
     if not token:
